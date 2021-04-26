@@ -1,0 +1,34 @@
+#drag-container {
+  width: 250px;
+  height: 500px;
+  border: 1px solid black;
+}
+
+#element-1 {
+  background-color: aqua;
+  width: 250px;
+  height: 50px;
+}
+
+#element-2 {
+  background-color: blueviolet;
+  width: 200px;
+  height: 50px;
+}
+
+#drop-container {
+  height: 500px;
+  width: 500px;
+  display: grid;
+  grid-template-rows: repeat(10, 50px);
+  grid-template-columns: repeat(10, 50px);
+  border: 1px solid black;
+}
+
+.highlight {
+  background-color: rgba(0, 128, 0, 0.253);
+}
+
+.placed {
+  background-color: green;
+}
