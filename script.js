@@ -20,9 +20,6 @@ for (let i = 0; i < 10; i++) {
 
 // Avoid placing a ship directly next to another one.
 
-// There is now some duplicate code: Check overlap and check
-// wrap --> Write extra function for that
-
 // Make element1 draggable
 element1.draggable = 'true'
 element1.dataset.sections = 5
@@ -42,18 +39,16 @@ element2.ondragstart = (ev) => {
 // Add color to fields  to highlight them
 // where mouse is and fields on right to mouse
 function highlightFields(ev) {
-  const targetEl = ev.target
-  let el = targetEl
+  ev.preventDefault()
 
-  if (checkWrap(targetEl) || checkPlaced(targetEl)) {
+  if (checkWrap(ev.target) || checkPlaced(ev.target)) {
     return
   }
 
-  ev.preventDefault()
-
+  let targetEl = ev.target
   for (let i = sections; i > 0; i--) {
-    el.classList.add('highlight')
-    el = el.nextSibling
+    targetEl.classList.add('highlight')
+    targetEl = targetEl.nextSibling
   }
 }
 
@@ -61,7 +56,9 @@ function highlightFields(ev) {
 // fields when mouse goes somewhere else
 function whitenFields(ev) {
   ev.preventDefault()
+
   let targetEl = ev.target
+
   for (let i = sections; i > 0; i--) {
     targetEl.classList.remove('highlight')
     targetEl = targetEl.nextSibling
@@ -71,25 +68,24 @@ function whitenFields(ev) {
 // Drop element into field and color this field
 // and fields on the right to it
 function placeElement(ev) {
-  // Check if element would wrap
-  // If yes don't allow it and exit drop function
-  const targetEl = ev.target
-  let el = targetEl
+  ev.preventDefault()
 
-  if (checkWrap(targetEl) || checkPlaced(targetEl)) {
+  if (checkWrap(ev.target) || checkPlaced(ev.target)) {
     return
   }
 
-  ev.preventDefault()
+  // Drop draggable Element into target Element (unseen)
   const data = ev.dataTransfer.getData('text')
-  targetEl.appendChild(document.getElementById(data))
+  ev.target.appendChild(document.getElementById(data))
 
+  // Color appropriate fields after dropping
+  let targetEl = ev.target
   for (let i = sections; i > 0; i--) {
-    el.classList.add('placed')
+    targetEl.classList.add('placed')
     // Remove Listeners so that here no Element can be dropped anymore
-    el.removeEventListener('dragover', highlightFields)
-    el.removeEventListener('drop', placeElement)
-    el = el.nextSibling
+    targetEl.removeEventListener('dragover', highlightFields)
+    targetEl.removeEventListener('drop', placeElement)
+    targetEl = targetEl.nextSibling
   }
 }
 
@@ -104,9 +100,8 @@ function checkWrap(targetBox) {
   }
 }
 
-// Check if element would be placed on other
-// already placed element. If yes don't allow
-// and exit drop function
+/* Check if element would be placed on other
+already placed element. (what is unwanted) */
 function checkPlaced(targetBox) {
   for (let i = sections; i > 0; i--) {
     if (targetBox.classList.contains('placed')) {
