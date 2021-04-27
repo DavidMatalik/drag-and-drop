@@ -11,13 +11,17 @@ for (let i = 0; i < 10; i++) {
     const field = document.createElement('div')
     field.classList.add('field')
     field.dataset.coords = `${i}${j}`
+    field.addEventListener('dragleave', whitenFields)
+    field.addEventListener('dragover', highlightFields)
+    field.addEventListener('drop', placeElement)
     dropContainer.appendChild(field)
   }
 }
 
-// Now we need some logic to avoid wrapping
-// ships. And also avoid placing a ship
-// directly next to another one.
+// Avoid placing a ship directly next to another one.
+
+// There is now some duplicate code: Check overlap and check
+// wrap --> Write extra function for that
 
 // Make element1 draggable
 element1.draggable = 'true'
@@ -35,38 +39,80 @@ element2.ondragstart = (ev) => {
   sections = ev.target.dataset.sections
 }
 
-// Remove color from previously highlighted
-// fields when mouse goes somewhere else
-dropContainer.ondragleave = (ev) => {
+// Add color to fields  to highlight them
+// where mouse is and fields on right to mouse
+function highlightFields(ev) {
+  const targetEl = ev.target
+  let el = targetEl
+
+  if (checkWrap(targetEl) || checkPlaced(targetEl)) {
+    return
+  }
+
   ev.preventDefault()
-  let currentElement = ev.target
+
   for (let i = sections; i > 0; i--) {
-    currentElement.classList.remove('highlight')
-    currentElement = currentElement.nextSibling
+    el.classList.add('highlight')
+    el = el.nextSibling
   }
 }
 
-// Add color to fields  to highlight them
-// where mouse is and fields on right to mouse
-dropContainer.ondragover = (ev) => {
+// Remove color from previously highlighted
+// fields when mouse goes somewhere else
+function whitenFields(ev) {
   ev.preventDefault()
-  let currentElement = ev.target
+  let targetEl = ev.target
   for (let i = sections; i > 0; i--) {
-    currentElement.classList.add('highlight')
-    currentElement = currentElement.nextSibling
+    targetEl.classList.remove('highlight')
+    targetEl = targetEl.nextSibling
   }
 }
 
 // Drop element into field and color this field
 // and fields on the right to it
-dropContainer.ondrop = (ev) => {
+function placeElement(ev) {
+  // Check if element would wrap
+  // If yes don't allow it and exit drop function
+  const targetEl = ev.target
+  let el = targetEl
+
+  if (checkWrap(targetEl) || checkPlaced(targetEl)) {
+    return
+  }
+
   ev.preventDefault()
   const data = ev.dataTransfer.getData('text')
-  ev.target.appendChild(document.getElementById(data))
+  targetEl.appendChild(document.getElementById(data))
 
-  let currentElement = ev.target
   for (let i = sections; i > 0; i--) {
-    currentElement.classList.add('placed')
-    currentElement = currentElement.nextSibling
+    el.classList.add('placed')
+    // Remove Listeners so that here no Element can be dropped anymore
+    el.removeEventListener('dragover', highlightFields)
+    el.removeEventListener('drop', placeElement)
+    el = el.nextSibling
   }
+}
+
+// Check if element would wrap (what is unwanted)
+function checkWrap(targetBox) {
+  const coords = targetBox.dataset.coords
+  const xCoord = parseInt(coords[1])
+  if (parseInt(sections) + xCoord > 10) {
+    return true
+  } else {
+    return false
+  }
+}
+
+// Check if element would be placed on other
+// already placed element. If yes don't allow
+// and exit drop function
+function checkPlaced(targetBox) {
+  for (let i = sections; i > 0; i--) {
+    if (targetBox.classList.contains('placed')) {
+      return true
+    }
+    targetBox = targetBox.nextSibling
+  }
+  return false
 }
