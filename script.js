@@ -2,6 +2,7 @@ const dragContainer = document.querySelector('#drag-container')
 const dropContainer = document.querySelector('#drop-container')
 const element1 = document.querySelector('#element-1')
 const element2 = document.querySelector('#element-2')
+const element3 = document.querySelector('#element-3')
 
 let sections = null
 
@@ -17,10 +18,6 @@ for (let i = 0; i < 10; i++) {
     dropContainer.appendChild(field)
   }
 }
-
-// Todo: Avoid placing a ship directly next to another one.
-// How to? Put class 'blocked' around ship fields.
-// If x=0 or x=9 then not put blocked on top/bottom
 
 // Make element1 draggable
 element1.draggable = 'true'
@@ -38,12 +35,24 @@ element2.ondragstart = (ev) => {
   sections = parseInt(ev.target.dataset.sections)
 }
 
+// Make element3 draggable
+element3.draggable = 'true'
+element3.dataset.sections = 3
+element3.ondragstart = (ev) => {
+  ev.dataTransfer.setData('text', ev.target.id)
+  sections = parseInt(ev.target.dataset.sections)
+}
+
 // Add color to fields  to highlight them
 // where mouse is and fields on right to mouse
 function highlightFields(ev) {
   ev.preventDefault()
 
-  if (checkWrap(ev.target) || checkPlaced(ev.target)) {
+  if (
+    checkWrap(ev.target) ||
+    checkPlaced(ev.target) ||
+    checkBlocked(ev.target)
+  ) {
     return
   }
 
@@ -72,7 +81,11 @@ function whitenFields(ev) {
 function placeElement(ev) {
   ev.preventDefault()
 
-  if (checkWrap(ev.target) || checkPlaced(ev.target)) {
+  if (
+    checkWrap(ev.target) ||
+    checkPlaced(ev.target) ||
+    checkBlocked(ev.target)
+  ) {
     return
   }
 
@@ -117,6 +130,18 @@ function checkPlaced(targetBox) {
   return false
 }
 
+/* Check if element would be placed on blocked
+field. (what is unwanted) */
+function checkBlocked(targetBox) {
+  for (let i = sections; i > 0; i--) {
+    if (targetBox.classList.contains('blocked')) {
+      return true
+    }
+    targetBox = targetBox.nextSibling
+  }
+  return false
+}
+
 // Block all fields around placed element
 function blockFieldsAround(ev) {
   let blockedCoords = []
@@ -140,31 +165,26 @@ function blockFieldsAround(ev) {
     coords = currentSection.dataset.coords
 
     // Block fields downside the element
-    try {
-      const coordsDown = parseInt(coords[0]) - 1 + coords[1]
-      blockedCoords.push(coordsDown)
-      console.log(blockedCoords)
-    } catch {}
+    const coordsDown = parseInt(coords[0]) - 1 + coords[1]
+    blockedCoords.push(coordsDown)
 
     // Block fields upside the element
-    try {
-      const coordsUp = parseInt(coords[0]) + 1 + coords[1]
-      blockedCoords.push(coordsUp)
-    } catch {}
+    const coordsUp = parseInt(coords[0]) + 1 + coords[1]
+    blockedCoords.push(coordsUp)
     currentSection = currentSection.nextSibling
   }
 
   blockedCoords.forEach((coords) => {
     const el = document.querySelector(`[data-coords='${coords}']`)
-    el.style.backgroundColor = 'red'
+    if (el !== null) {
+      el.classList.add('blocked')
+    }
   })
 
   function blockLeftRight(coords, offsetX, offsetY) {
-    try {
-      coordsBlock = `${parseInt(coords[0]) + offsetY}${
-        parseInt(coords[1]) + offsetX
-      }`
-      blockedCoords.push(coordsBlock)
-    } catch {}
+    coordsBlock = `${parseInt(coords[0]) + offsetY}${
+      parseInt(coords[1]) + offsetX
+    }`
+    blockedCoords.push(coordsBlock)
   }
 }

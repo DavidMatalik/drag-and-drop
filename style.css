@@ -29,6 +29,12 @@
   grid-row: 2 / 3;
 }
 
+#element-3 {
+  background-color: coral;
+  grid-column: 1 / 4;
+  grid-row: 3 / 4;
+}
+
 .highlight {
   background-color: rgba(0, 128, 0, 0.253);
 }
