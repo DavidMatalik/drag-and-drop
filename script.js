@@ -2,6 +2,7 @@ const dragContainer = document.querySelector('#drag-container')
 const dropContainer = document.querySelector('#drop-container')
 const element1 = document.querySelector('#element-1')
 const element2 = document.querySelector('#element-2')
+let vertical = false
 
 let sections = null
 
@@ -26,6 +27,8 @@ function makeElementDraggable(element) {
 
     document.body.append(element)
 
+    document.addEventListener('keyup', rotate)
+
     function moveAt(pageX, pageY) {
       element.style.left = pageX - element.offsetWidth / 2 + 'px'
       element.style.top = pageY - element.offsetHeight / 2 + 'px'
@@ -35,6 +38,19 @@ function makeElementDraggable(element) {
 
     function onMouseMove(event) {
       moveAt(event.pageX, event.pageY)
+    }
+
+    function rotate(ev) {
+      // 37 is left arrow key and 39 right arrow key
+      if (ev.keyCode === 37 || ev.keyCode === 39) {
+        if (vertical === false) {
+          element.style.transform = 'rotate(90deg)'
+          vertical = true
+        } else if (vertical === true) {
+          element.style.transform = ''
+          vertical = false
+        }
+      }
     }
 
     document.addEventListener('mousemove', onMouseMove)
