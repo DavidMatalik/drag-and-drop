@@ -2,9 +2,12 @@ const dragContainer = document.querySelector('#drag-container')
 const dropContainer = document.querySelector('#drop-container')
 const element1 = document.querySelector('#element-1')
 const element2 = document.querySelector('#element-2')
-let vertical = false
 
+let vertical = false
 let sections = null
+
+element1.dataset.sections = 5
+element2.dataset.sections = 4
 
 //Create fields of dropContainer
 for (let i = 0; i < 10; i++) {
@@ -13,6 +16,7 @@ for (let i = 0; i < 10; i++) {
     field.classList.add('field')
     field.dataset.coords = `${i}${j}`
     dropContainer.appendChild(field)
+    field.addEventListener('mouseover', highlightFields)
   }
 }
 
@@ -25,12 +29,13 @@ function makeElementDraggable(element) {
     element.style.position = 'absolute'
     element.style.zIndex = 1000
 
-    document.body.append(element)
+    sections = parseInt(element.dataset.sections)
 
+    document.body.append(element)
     document.addEventListener('keyup', rotate)
 
     function moveAt(pageX, pageY) {
-      element.style.left = pageX - element.offsetWidth / 2 + 'px'
+      element.style.left = pageX + 10 + 'px'
       element.style.top = pageY - element.offsetHeight / 2 + 'px'
     }
 
@@ -59,5 +64,16 @@ function makeElementDraggable(element) {
       document.removeEventListener('mousemove', onMouseMove)
       element.onmouseup = null
     }
+  }
+}
+
+// Add color to fields  to highlight them
+// where mouse is and fields on right to mouse
+function highlightFields(ev) {
+  let targetEl = ev.target
+
+  for (let i = sections; i > 0; i--) {
+    targetEl.classList.add('highlight')
+    targetEl = targetEl.nextSibling
   }
 }
