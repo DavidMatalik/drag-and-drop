@@ -17,6 +17,7 @@ for (let i = 0; i < 10; i++) {
     field.dataset.coords = `${i}${j}`
     dropContainer.appendChild(field)
     field.addEventListener('mouseover', highlightFields)
+    field.addEventListener('mouseleave', whitenFields)
   }
 }
 
@@ -74,6 +75,17 @@ function highlightFields(ev) {
 
   for (let i = sections; i > 0; i--) {
     targetEl.classList.add('highlight')
+    targetEl = targetEl.nextSibling
+  }
+}
+
+// Remove color from previously highlighted
+// fields when mouse goes somewhere else
+function whitenFields(ev) {
+  let targetEl = ev.target
+
+  for (let i = sections; i > 0; i--) {
+    targetEl.classList.remove('highlight')
     targetEl = targetEl.nextSibling
   }
 }
