@@ -4,6 +4,10 @@ const element1 = document.querySelector('#element-1')
 const element2 = document.querySelector('#element-2')
 const element3 = document.querySelector('#element-3')
 
+element1.dataset.sections = '5'
+element2.dataset.sections = '4'
+element3.dataset.sections = '3'
+
 let sections = null
 let copy = null
 let vertical = false
@@ -27,7 +31,6 @@ makeElementDraggable(element3)
 
 function makeElementDraggable(element) {
   element.draggable = 'true'
-  element.dataset.sections = 5
   element.ondragstart = (ev) => {
     var img = new Image()
     ev.dataTransfer.setDragImage(img, 0, 0)
@@ -64,7 +67,6 @@ function makeElementDraggable(element) {
 // Add color to fields  to highlight them
 // where mouse is and fields on right to mouse
 function highlightFields(ev) {
-  console.log('hello')
   ev.preventDefault()
 
   if (
@@ -108,11 +110,13 @@ function placeElement(ev) {
     return
   }
 
-  // Drop draggable Element into target Element (unseen)
+  // Remove original element and copy
   const data = ev.dataTransfer.getData('text')
-  ev.target.appendChild(document.getElementById(data))
+  document.getElementById(data).remove()
+  copy.remove()
 
   let currentSection = ev.target
+
   // Color appropriate fields after dropping
   for (let i = sections; i > 0; i--) {
     currentSection.classList.add('placed')
