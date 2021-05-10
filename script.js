@@ -58,8 +58,10 @@ function makeElementDraggable(element) {
   element.ondrag = (ev) => {
     if (ev.ctrlKey) {
       copy.style.transform = 'rotate(90deg)'
+      vertical = true
     } else {
       copy.style.transform = ''
+      vertical = false
     }
   }
 }
@@ -78,9 +80,24 @@ function highlightFields(ev) {
   }
 
   let targetEl = ev.target
-  for (let i = sections; i > 0; i--) {
-    targetEl.classList.add('highlight')
-    targetEl = targetEl.nextSibling
+
+  // Check if horizontal or vertical highlighting
+  if (vertical) {
+    // For vertical highlighting
+    let coords = parseInt(targetEl.dataset.coords)
+    for (let i = sections; i > 0; i--) {
+      targetEl.classList.add('highlight')
+      // Select the element which is directly under
+      // targetEl.
+      coords += 10
+      targetEl = document.querySelector(`[data-coords='${coords}']`)
+    }
+  } else {
+    // For horizontal highlighting
+    for (let i = sections; i > 0; i--) {
+      targetEl.classList.add('highlight')
+      targetEl = targetEl.nextSibling
+    }
   }
 }
 
@@ -91,6 +108,18 @@ function whitenFields(ev) {
 
   let targetEl = ev.target
 
+  // Whiten all fields vertically
+  let coords = parseInt(targetEl.dataset.coords)
+  for (let i = sections; i > 0; i--) {
+    targetEl.classList.remove('highlight')
+    // Select the element which is directly under
+    // targetEl.
+    coords += 10
+    targetEl = document.querySelector(`[data-coords='${coords}']`)
+  }
+
+  targetEl = ev.target
+  // Whiten all fields horizontally
   for (let i = sections; i > 0; i--) {
     targetEl.classList.remove('highlight')
     targetEl = targetEl.nextSibling
