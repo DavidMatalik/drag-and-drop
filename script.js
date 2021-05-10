@@ -5,6 +5,8 @@ const element2 = document.querySelector('#element-2')
 const element3 = document.querySelector('#element-3')
 
 let sections = null
+let copy = null
+let vertical = false
 
 //Create fields of dropContainer
 for (let i = 0; i < 10; i++) {
@@ -19,33 +21,50 @@ for (let i = 0; i < 10; i++) {
   }
 }
 
-// Make element1 draggable
-element1.draggable = 'true'
-element1.dataset.sections = 5
-element1.ondragstart = (ev) => {
-  ev.dataTransfer.setData('text', ev.target.id)
-  sections = parseInt(ev.target.dataset.sections)
-}
+makeElementDraggable(element1)
+makeElementDraggable(element2)
+makeElementDraggable(element3)
 
-// Make element2 draggable
-element2.draggable = 'true'
-element2.dataset.sections = 4
-element2.ondragstart = (ev) => {
-  ev.dataTransfer.setData('text', ev.target.id)
-  sections = parseInt(ev.target.dataset.sections)
-}
+function makeElementDraggable(element) {
+  element.draggable = 'true'
+  element.dataset.sections = 5
+  element.ondragstart = (ev) => {
+    var img = new Image()
+    ev.dataTransfer.setDragImage(img, 0, 0)
+    ev.dataTransfer.setData('text', ev.target.id)
+    ev.dataTransfer.effectAllowed = 'all'
+    sections = parseInt(ev.target.dataset.sections)
 
-// Make element3 draggable
-element3.draggable = 'true'
-element3.dataset.sections = 3
-element3.ondragstart = (ev) => {
-  ev.dataTransfer.setData('text', ev.target.id)
-  sections = parseInt(ev.target.dataset.sections)
+    copy = element.cloneNode(true)
+    copy.style.position = 'absolute'
+
+    document.body.append(copy)
+
+    document.addEventListener('drag', (ev) => {
+      copy.style.top = ev.pageY + 10 + 'px'
+      copy.style.left = ev.pageX + 'px'
+    })
+
+    document.addEventListener('dragend', () => {
+      copy.remove()
+    })
+  }
+
+  // If ctrl key is pressed and hold
+  // then display copy vertical
+  element.ondrag = (ev) => {
+    if (ev.ctrlKey) {
+      copy.style.transform = 'rotate(90deg)'
+    } else {
+      copy.style.transform = ''
+    }
+  }
 }
 
 // Add color to fields  to highlight them
 // where mouse is and fields on right to mouse
 function highlightFields(ev) {
+  console.log('hello')
   ev.preventDefault()
 
   if (
