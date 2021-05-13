@@ -1,3 +1,8 @@
+/* Todos: 
+- Implement vertical placing 
+- Implement blocking space around vertical placed elements
+*/
+
 const dragContainer = document.querySelector('#drag-container')
 const dropContainer = document.querySelector('#drop-container')
 const element1 = document.querySelector('#element-1')
@@ -58,10 +63,20 @@ function makeElementDraggable(element) {
   element.ondrag = (ev) => {
     if (ev.ctrlKey) {
       copy.style.transform = 'rotate(90deg)'
-      vertical = true
+      if (vertical === false) {
+        vertical = true
+        // Without whitenAllFields for some time vertical
+        // highlights are displayed and horizontal
+        whitenAllFields()
+      }
     } else {
       copy.style.transform = ''
-      vertical = false
+      if (vertical === true) {
+        vertical = false
+        // Without whitenAllFields for some time vertical
+        // highlights are displayed and horizontal
+        whitenAllFields()
+      }
     }
   }
 }
@@ -71,18 +86,18 @@ function makeElementDraggable(element) {
 function highlightFields(ev) {
   ev.preventDefault()
 
-  if (
-    checkWrap(ev.target) ||
-    checkPlaced(ev.target) ||
-    checkBlocked(ev.target)
-  ) {
-    return
-  }
-
   let targetEl = ev.target
 
   // Check if horizontal or vertical highlighting
   if (vertical) {
+    if (
+      checkVerticalWrap(ev.target) ||
+      checkPlaced(ev.target) ||
+      checkBlocked(ev.target)
+    ) {
+      return
+    }
+
     // For vertical highlighting
     let coords = parseInt(targetEl.dataset.coords)
     for (let i = sections; i > 0; i--) {
@@ -93,12 +108,27 @@ function highlightFields(ev) {
       targetEl = document.querySelector(`[data-coords='${coords}']`)
     }
   } else {
+    if (
+      checkHorizontalWrap(ev.target) ||
+      checkPlaced(ev.target) ||
+      checkBlocked(ev.target)
+    ) {
+      return
+    }
+
     // For horizontal highlighting
     for (let i = sections; i > 0; i--) {
       targetEl.classList.add('highlight')
       targetEl = targetEl.nextSibling
     }
   }
+}
+
+function whitenAllFields() {
+  fields = document.querySelectorAll('.field')
+  fields.forEach((field) => {
+    field.classList.remove('highlight')
+  })
 }
 
 // Remove color from previously highlighted
@@ -116,6 +146,9 @@ function whitenFields(ev) {
     // targetEl.
     coords += 10
     targetEl = document.querySelector(`[data-coords='${coords}']`)
+    if (targetEl === null) {
+      break
+    }
   }
 
   targetEl = ev.target
@@ -132,7 +165,7 @@ function placeElement(ev) {
   ev.preventDefault()
 
   if (
-    checkWrap(ev.target) ||
+    checkHorizontalWrap(ev.target) ||
     checkPlaced(ev.target) ||
     checkBlocked(ev.target)
   ) {
@@ -160,10 +193,20 @@ function placeElement(ev) {
 }
 
 // Check if element would wrap (what is unwanted)
-function checkWrap(targetBox) {
+function checkHorizontalWrap(targetBox) {
   const coords = targetBox.dataset.coords
   const xCoord = parseInt(coords[1])
   if (parseInt(sections) + xCoord > 10) {
+    return true
+  } else {
+    return false
+  }
+}
+
+function checkVerticalWrap(targetBox) {
+  const coords = targetBox.dataset.coords
+  const yCoord = parseInt(coords[0])
+  if (parseInt(sections) + yCoord > 10) {
     return true
   } else {
     return false
