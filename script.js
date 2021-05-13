@@ -1,6 +1,8 @@
 /* Todos: 
-- Implement vertical placing 
 - Implement blocking space around vertical placed elements
+- Write checkPlaced und checkBlocked at beginning of function
+- You could also write methods for getting vertical or horizontal fields
+  needed for highlighting/whitening/placing methods --> DRY, cleaner code
 */
 
 const dragContainer = document.querySelector('#drag-container')
@@ -86,15 +88,15 @@ function makeElementDraggable(element) {
 function highlightFields(ev) {
   ev.preventDefault()
 
+  if (checkPlaced(ev.target) || checkBlocked(ev.target)) {
+    return
+  }
+
   let targetEl = ev.target
 
   // Check if horizontal or vertical highlighting
   if (vertical) {
-    if (
-      checkVerticalWrap(ev.target) ||
-      checkPlaced(ev.target) ||
-      checkBlocked(ev.target)
-    ) {
+    if (checkVerticalWrap(ev.target)) {
       return
     }
 
@@ -108,11 +110,7 @@ function highlightFields(ev) {
       targetEl = document.querySelector(`[data-coords='${coords}']`)
     }
   } else {
-    if (
-      checkHorizontalWrap(ev.target) ||
-      checkPlaced(ev.target) ||
-      checkBlocked(ev.target)
-    ) {
+    if (checkHorizontalWrap(ev.target)) {
       return
     }
 
@@ -164,32 +162,51 @@ function whitenFields(ev) {
 function placeElement(ev) {
   ev.preventDefault()
 
-  if (
-    checkHorizontalWrap(ev.target) ||
-    checkPlaced(ev.target) ||
-    checkBlocked(ev.target)
-  ) {
+  if (checkPlaced(ev.target) || checkBlocked(ev.target)) {
     return
+  }
+
+  let currentSection = ev.target
+
+  if (vertical) {
+    if (checkVerticalWrap(ev.target)) {
+      return
+    }
+
+    let coords = parseInt(currentSection.dataset.coords)
+    for (let i = sections; i > 0; i--) {
+      currentSection.classList.add('placed')
+
+      // Remove Listeners so that here no Element can be dropped anymore
+      currentSection.removeEventListener('dragover', highlightFields)
+      currentSection.removeEventListener('drop', placeElement)
+      coords += 10
+      currentSection = document.querySelector(`[data-coords='${coords}']`)
+    }
+
+    //blockFieldsAround(ev)
+  } else {
+    if (checkHorizontalWrap(ev.target)) {
+      return
+    }
+
+    // Color appropriate horizontal fields after dropping
+    for (let i = sections; i > 0; i--) {
+      currentSection.classList.add('placed')
+
+      // Remove Listeners so that here no Element can be dropped anymore
+      currentSection.removeEventListener('dragover', highlightFields)
+      currentSection.removeEventListener('drop', placeElement)
+      currentSection = currentSection.nextSibling
+    }
+
+    blockFieldsAround(ev)
   }
 
   // Remove original element and copy
   const data = ev.dataTransfer.getData('text')
   document.getElementById(data).remove()
   copy.remove()
-
-  let currentSection = ev.target
-
-  // Color appropriate fields after dropping
-  for (let i = sections; i > 0; i--) {
-    currentSection.classList.add('placed')
-
-    // Remove Listeners so that here no Element can be dropped anymore
-    currentSection.removeEventListener('dragover', highlightFields)
-    currentSection.removeEventListener('drop', placeElement)
-    currentSection = currentSection.nextSibling
-  }
-
-  blockFieldsAround(ev)
 }
 
 // Check if element would wrap (what is unwanted)
