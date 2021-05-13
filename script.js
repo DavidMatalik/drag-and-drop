@@ -1,6 +1,10 @@
 /* Todos: 
-- Implement blocking space around vertical placed elements
-- Write checkPlaced und checkBlocked at beginning of function
+- A lot of repeating code in blockFieldsVerticalElement and blockFieldsHorizontalElement
+  How to write better/cleaner code? You could in general block all fields around a placed 
+  field. Like that you don't have to specific about vertical/horizontal blocking.
+
+- Write checkPlacedHorizontally und checkBlocked at beginning of function
+
 - You could also write methods for getting vertical or horizontal fields
   needed for highlighting/whitening/placing methods --> DRY, cleaner code
 */
@@ -88,15 +92,15 @@ function makeElementDraggable(element) {
 function highlightFields(ev) {
   ev.preventDefault()
 
-  if (checkPlaced(ev.target) || checkBlocked(ev.target)) {
-    return
-  }
-
   let targetEl = ev.target
 
   // Check if horizontal or vertical highlighting
   if (vertical) {
-    if (checkVerticalWrap(ev.target)) {
+    if (
+      checkWrapVertically(ev.target) ||
+      checkPlacedVertically(ev.target) ||
+      checkBlockedVertically(ev.target)
+    ) {
       return
     }
 
@@ -110,7 +114,11 @@ function highlightFields(ev) {
       targetEl = document.querySelector(`[data-coords='${coords}']`)
     }
   } else {
-    if (checkHorizontalWrap(ev.target)) {
+    if (
+      checkWrapHorizontally(ev.target) ||
+      checkPlacedHorizontally(ev.target) ||
+      checkBlockedHorizontally(ev.target)
+    ) {
       return
     }
 
@@ -162,14 +170,14 @@ function whitenFields(ev) {
 function placeElement(ev) {
   ev.preventDefault()
 
-  if (checkPlaced(ev.target) || checkBlocked(ev.target)) {
-    return
-  }
-
   let currentSection = ev.target
 
   if (vertical) {
-    if (checkVerticalWrap(ev.target)) {
+    if (
+      checkWrapVertically(ev.target) ||
+      checkPlacedVertically(ev.target) ||
+      checkBlockedVertically(ev.target)
+    ) {
       return
     }
 
@@ -186,7 +194,11 @@ function placeElement(ev) {
 
     blockFieldsVerticalElement(ev)
   } else {
-    if (checkHorizontalWrap(ev.target)) {
+    if (
+      checkWrapHorizontally(ev.target) ||
+      checkPlacedHorizontally(ev.target) ||
+      checkBlockedHorizontally(ev.target)
+    ) {
       return
     }
 
@@ -210,7 +222,7 @@ function placeElement(ev) {
 }
 
 // Check if element would wrap (what is unwanted)
-function checkHorizontalWrap(targetBox) {
+function checkWrapHorizontally(targetBox) {
   const coords = targetBox.dataset.coords
   const xCoord = parseInt(coords[1])
   if (parseInt(sections) + xCoord > 10) {
@@ -220,7 +232,8 @@ function checkHorizontalWrap(targetBox) {
   }
 }
 
-function checkVerticalWrap(targetBox) {
+// Check if element would wrap (what is unwanted)
+function checkWrapVertically(targetBox) {
   const coords = targetBox.dataset.coords
   const yCoord = parseInt(coords[0])
   if (parseInt(sections) + yCoord > 10) {
@@ -232,7 +245,7 @@ function checkVerticalWrap(targetBox) {
 
 /* Check if element would be placed on other
 already placed element. (what is unwanted) */
-function checkPlaced(targetBox) {
+function checkPlacedHorizontally(targetBox) {
   for (let i = sections; i > 0; i--) {
     if (targetBox.classList.contains('placed')) {
       return true
@@ -242,14 +255,42 @@ function checkPlaced(targetBox) {
   return false
 }
 
+/* Check if element would be placed on other
+already placed element. (what is unwanted) */
+function checkPlacedVertically(targetBox) {
+  let coords = parseInt(targetBox.dataset.coords)
+  for (let i = sections; i > 0; i--) {
+    if (targetBox.classList.contains('placed')) {
+      return true
+    }
+    coords += 10
+    targetBox = document.querySelector(`[data-coords='${coords}']`)
+  }
+  return false
+}
+
 /* Check if element would be placed on blocked
 field. (what is unwanted) */
-function checkBlocked(targetBox) {
+function checkBlockedHorizontally(targetBox) {
   for (let i = sections; i > 0; i--) {
     if (targetBox.classList.contains('blocked')) {
       return true
     }
     targetBox = targetBox.nextSibling
+  }
+  return false
+}
+
+/* Check if element would be placed on blocked
+field. (what is unwanted) */
+function checkBlockedVertically(targetBox) {
+  let coords = parseInt(targetBox.dataset.coords)
+  for (let i = sections; i > 0; i--) {
+    if (targetBox.classList.contains('blocked')) {
+      return true
+    }
+    coords += 10
+    targetBox = document.querySelector(`[data-coords='${coords}']`)
   }
   return false
 }
