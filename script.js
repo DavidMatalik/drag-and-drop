@@ -1,9 +1,5 @@
 /* Todos: 
-- A lot of repeating code in blockFieldsVerticalElement and blockFieldsHorizontalElement
-  How to write better/cleaner code? You could in general block all fields around a placed 
-  field. Like that you don't have to specific about vertical/horizontal blocking.
-
-- Write checkPlacedHorizontally und checkBlocked at beginning of function
+- Write checkBlocked at beginning of function
 
 - You could also write methods for getting vertical or horizontal fields
   needed for highlighting/whitening/placing methods --> DRY, cleaner code
@@ -96,11 +92,7 @@ function highlightFields(ev) {
 
   // Check if horizontal or vertical highlighting
   if (vertical) {
-    if (
-      checkWrapVertically(ev.target) ||
-      checkPlacedVertically(ev.target) ||
-      checkBlockedVertically(ev.target)
-    ) {
+    if (checkWrapVertically(ev.target) || checkBlockedVertically(ev.target)) {
       return
     }
 
@@ -116,7 +108,6 @@ function highlightFields(ev) {
   } else {
     if (
       checkWrapHorizontally(ev.target) ||
-      checkPlacedHorizontally(ev.target) ||
       checkBlockedHorizontally(ev.target)
     ) {
       return
@@ -171,19 +162,16 @@ function placeElement(ev) {
   ev.preventDefault()
 
   let currentSection = ev.target
+  let coords = parseInt(currentSection.dataset.coords)
 
   if (vertical) {
-    if (
-      checkWrapVertically(ev.target) ||
-      checkPlacedVertically(ev.target) ||
-      checkBlockedVertically(ev.target)
-    ) {
+    if (checkWrapVertically(ev.target) || checkBlockedVertically(ev.target)) {
       return
     }
 
-    let coords = parseInt(currentSection.dataset.coords)
     for (let i = sections; i > 0; i--) {
       currentSection.classList.add('placed')
+      blockFieldsAround(coords)
 
       // Remove Listeners so that here no Element can be dropped anymore
       currentSection.removeEventListener('dragover', highlightFields)
@@ -192,11 +180,10 @@ function placeElement(ev) {
       currentSection = document.querySelector(`[data-coords='${coords}']`)
     }
 
-    blockFieldsVerticalElement(ev)
+    // blockFieldsVerticalElement(ev)
   } else {
     if (
       checkWrapHorizontally(ev.target) ||
-      checkPlacedHorizontally(ev.target) ||
       checkBlockedHorizontally(ev.target)
     ) {
       return
@@ -205,14 +192,14 @@ function placeElement(ev) {
     // Color appropriate horizontal fields after dropping
     for (let i = sections; i > 0; i--) {
       currentSection.classList.add('placed')
+      blockFieldsAround(coords)
 
       // Remove Listeners so that here no Element can be dropped anymore
       currentSection.removeEventListener('dragover', highlightFields)
       currentSection.removeEventListener('drop', placeElement)
-      currentSection = currentSection.nextSibling
+      coords += 1
+      currentSection = document.querySelector(`[data-coords='${coords}']`)
     }
-
-    blockFieldsHorizontalElement(ev)
   }
 
   // Remove original element and copy
@@ -243,32 +230,6 @@ function checkWrapVertically(targetBox) {
   }
 }
 
-/* Check if element would be placed on other
-already placed element. (what is unwanted) */
-function checkPlacedHorizontally(targetBox) {
-  for (let i = sections; i > 0; i--) {
-    if (targetBox.classList.contains('placed')) {
-      return true
-    }
-    targetBox = targetBox.nextSibling
-  }
-  return false
-}
-
-/* Check if element would be placed on other
-already placed element. (what is unwanted) */
-function checkPlacedVertically(targetBox) {
-  let coords = parseInt(targetBox.dataset.coords)
-  for (let i = sections; i > 0; i--) {
-    if (targetBox.classList.contains('placed')) {
-      return true
-    }
-    coords += 10
-    targetBox = document.querySelector(`[data-coords='${coords}']`)
-  }
-  return false
-}
-
 /* Check if element would be placed on blocked
 field. (what is unwanted) */
 function checkBlockedHorizontally(targetBox) {
@@ -295,98 +256,29 @@ function checkBlockedVertically(targetBox) {
   return false
 }
 
-// Block all fields around placed element
-function blockFieldsHorizontalElement(ev) {
+function blockFieldsAround(coordsEl) {
   let blockedCoords = []
-  let coordsLeftEl = ev.target.dataset.coords
-  let coordsRightEl = `${coordsLeftEl[0]}${
-    parseInt(coordsLeftEl[1]) + sections - 1
-  }`
-
-  // Block fields on left side
-  blockLeftRight(coordsLeftEl, -1, 0)
-  blockLeftRight(coordsLeftEl, -1, 1)
-  blockLeftRight(coordsLeftEl, -1, -1)
-
-  // Block fields on right side
-  blockLeftRight(coordsRightEl, 1, 0)
-  blockLeftRight(coordsRightEl, 1, 1)
-  blockLeftRight(coordsRightEl, 1, -1)
-
-  let currentSection = ev.target
-  for (let i = sections; i > 0; i--) {
-    coords = currentSection.dataset.coords
-
-    // Block fields downside the element
-    const coordsDown = parseInt(coords[0]) - 1 + coords[1]
-    blockedCoords.push(coordsDown)
-
-    // Block fields upside the element
-    const coordsUp = parseInt(coords[0]) + 1 + coords[1]
-    blockedCoords.push(coordsUp)
-    currentSection = currentSection.nextSibling
-  }
-
-  blockedCoords.forEach((coords) => {
-    const el = document.querySelector(`[data-coords='${coords}']`)
-    if (el !== null) {
-      el.classList.add('blocked')
-    }
-  })
-
-  function blockLeftRight(coords, offsetX, offsetY) {
-    coordsBlock = `${parseInt(coords[0]) + offsetY}${
-      parseInt(coords[1]) + offsetX
-    }`
-    blockedCoords.push(coordsBlock)
-  }
-}
-
-function blockFieldsVerticalElement(ev) {
-  let blockedCoords = []
-  let coordsTopEl = ev.target.dataset.coords
-  let coordsBottomEl = `${parseInt(coordsTopEl[0]) + sections - 1}${
-    coordsTopEl[1]
-  }`
-
-  // Block fields on top side
-  blockTopBottom(coordsTopEl, -1, -1)
-  blockTopBottom(coordsTopEl, 0, -1)
-  blockTopBottom(coordsTopEl, 1, -1)
 
   // Block fields on bottom side
-  blockTopBottom(coordsBottomEl, -1, 1)
-  blockTopBottom(coordsBottomEl, 01, 1)
-  blockTopBottom(coordsBottomEl, 1, 1)
+  blockedCoords.push(`${coordsEl + 9}`)
+  blockedCoords.push(`${coordsEl + 10}`)
+  blockedCoords.push(`${coordsEl + 11}`)
 
-  let currentSection = ev.target
-  let coords = parseInt(currentSection.dataset.coords)
-  for (let i = sections; i > 0; i--) {
-    // Block fields on right of the element
-    const coordsRight = `${coords + 1}`
-    blockedCoords.push(coordsRight)
+  // Block fields on top side
+  blockedCoords.push(`${coordsEl - 9}`)
+  blockedCoords.push(`${coordsEl - 10}`)
+  blockedCoords.push(`${coordsEl - 11}`)
 
-    // Block fields on left of the element
-    const coordsLeft = `${coords - 1}`
-    blockedCoords.push(coordsLeft)
-
-    console.log(coordsLeft)
-
-    coords += 10
-    currentSection = document.querySelector(`[data-coords='${coords}']`)
-  }
+  // Block fields on left and right side
+  blockedCoords.push(`${coordsEl - 1}`)
+  blockedCoords.push(`${coordsEl + 1}`)
 
   blockedCoords.forEach((coords) => {
-    const el = document.querySelector(`[data-coords='${coords}']`)
+    const el = document.querySelector(
+      `[data-coords='${coords < 10 ? 0 : ''}${coords}']`
+    )
     if (el !== null) {
       el.classList.add('blocked')
     }
   })
-
-  function blockTopBottom(coords, offsetX, offsetY) {
-    coordsBlock = `${parseInt(coords[0]) + offsetY}${
-      parseInt(coords[1]) + offsetX
-    }`
-    blockedCoords.push(coordsBlock)
-  }
 }
