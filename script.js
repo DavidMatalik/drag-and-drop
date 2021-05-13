@@ -184,7 +184,7 @@ function placeElement(ev) {
       currentSection = document.querySelector(`[data-coords='${coords}']`)
     }
 
-    //blockFieldsAround(ev)
+    blockFieldsVerticalElement(ev)
   } else {
     if (checkHorizontalWrap(ev.target)) {
       return
@@ -200,7 +200,7 @@ function placeElement(ev) {
       currentSection = currentSection.nextSibling
     }
 
-    blockFieldsAround(ev)
+    blockFieldsHorizontalElement(ev)
   }
 
   // Remove original element and copy
@@ -255,7 +255,7 @@ function checkBlocked(targetBox) {
 }
 
 // Block all fields around placed element
-function blockFieldsAround(ev) {
+function blockFieldsHorizontalElement(ev) {
   let blockedCoords = []
   let coordsLeftEl = ev.target.dataset.coords
   let coordsRightEl = `${coordsLeftEl[0]}${
@@ -272,7 +272,7 @@ function blockFieldsAround(ev) {
   blockLeftRight(coordsRightEl, 1, 1)
   blockLeftRight(coordsRightEl, 1, -1)
 
-  currentSection = ev.target
+  let currentSection = ev.target
   for (let i = sections; i > 0; i--) {
     coords = currentSection.dataset.coords
 
@@ -294,6 +294,55 @@ function blockFieldsAround(ev) {
   })
 
   function blockLeftRight(coords, offsetX, offsetY) {
+    coordsBlock = `${parseInt(coords[0]) + offsetY}${
+      parseInt(coords[1]) + offsetX
+    }`
+    blockedCoords.push(coordsBlock)
+  }
+}
+
+function blockFieldsVerticalElement(ev) {
+  let blockedCoords = []
+  let coordsTopEl = ev.target.dataset.coords
+  let coordsBottomEl = `${parseInt(coordsTopEl[0]) + sections - 1}${
+    coordsTopEl[1]
+  }`
+
+  // Block fields on top side
+  blockTopBottom(coordsTopEl, -1, -1)
+  blockTopBottom(coordsTopEl, 0, -1)
+  blockTopBottom(coordsTopEl, 1, -1)
+
+  // Block fields on bottom side
+  blockTopBottom(coordsBottomEl, -1, 1)
+  blockTopBottom(coordsBottomEl, 01, 1)
+  blockTopBottom(coordsBottomEl, 1, 1)
+
+  let currentSection = ev.target
+  let coords = parseInt(currentSection.dataset.coords)
+  for (let i = sections; i > 0; i--) {
+    // Block fields on right of the element
+    const coordsRight = `${coords + 1}`
+    blockedCoords.push(coordsRight)
+
+    // Block fields on left of the element
+    const coordsLeft = `${coords - 1}`
+    blockedCoords.push(coordsLeft)
+
+    console.log(coordsLeft)
+
+    coords += 10
+    currentSection = document.querySelector(`[data-coords='${coords}']`)
+  }
+
+  blockedCoords.forEach((coords) => {
+    const el = document.querySelector(`[data-coords='${coords}']`)
+    if (el !== null) {
+      el.classList.add('blocked')
+    }
+  })
+
+  function blockTopBottom(coords, offsetX, offsetY) {
     coordsBlock = `${parseInt(coords[0]) + offsetY}${
       parseInt(coords[1]) + offsetX
     }`
