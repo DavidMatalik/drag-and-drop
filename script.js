@@ -3,6 +3,12 @@
 
 - You could also write methods for getting vertical or horizontal fields
   needed for highlighting/whitening/placing methods --> DRY, cleaner code
+
+- Make sections locally?
+
+- Change ev.target to targetEl in highlightFields and placeElement
+
+- Have consistent wording of field and fields across the whole program
 */
 
 const dragContainer = document.querySelector('#drag-container')
@@ -83,6 +89,24 @@ function makeElementDraggable(element) {
   }
 }
 
+function getFields(targetEl) {
+  let fields = []
+
+  // for vertical Elements
+  let coords = parseInt(targetEl.dataset.coords)
+  for (let i = sections; i > 0; i--) {
+    const field = document.querySelector(`[data-coords='${coords}']`)
+    if (field === null) {
+      break
+    }
+    fields.push(field)
+    // Prepare selection of field under current field
+    coords += 10
+  }
+
+  return fields
+}
+
 // Add color to fields  to highlight them
 // where mouse is and fields on right to mouse
 function highlightFields(ev) {
@@ -97,14 +121,8 @@ function highlightFields(ev) {
     }
 
     // For vertical highlighting
-    let coords = parseInt(targetEl.dataset.coords)
-    for (let i = sections; i > 0; i--) {
-      targetEl.classList.add('highlight')
-      // Select the element which is directly under
-      // targetEl.
-      coords += 10
-      targetEl = document.querySelector(`[data-coords='${coords}']`)
-    }
+    const fields = getFields(targetEl)
+    fields.forEach((field) => field.classList.add('highlight'))
   } else {
     if (
       checkWrapHorizontally(ev.target) ||
@@ -136,17 +154,8 @@ function whitenFields(ev) {
   let targetEl = ev.target
 
   // Whiten all fields vertically
-  let coords = parseInt(targetEl.dataset.coords)
-  for (let i = sections; i > 0; i--) {
-    targetEl.classList.remove('highlight')
-    // Select the element which is directly under
-    // targetEl.
-    coords += 10
-    targetEl = document.querySelector(`[data-coords='${coords}']`)
-    if (targetEl === null) {
-      break
-    }
-  }
+  const fields = getFields(targetEl)
+  fields.forEach((field) => field.classList.remove('highlight'))
 
   targetEl = ev.target
   // Whiten all fields horizontally
@@ -162,23 +171,23 @@ function placeElement(ev) {
   ev.preventDefault()
 
   let currentSection = ev.target
-  let coords = parseInt(currentSection.dataset.coords)
 
   if (vertical) {
     if (checkWrapVertically(ev.target) || checkBlockedVertically(ev.target)) {
       return
     }
 
-    for (let i = sections; i > 0; i--) {
-      currentSection.classList.add('placed')
+    const fields = getFields(currentSection)
+    fields.forEach((field) => {
+      field.classList.add('placed')
+
+      const coords = parseInt(field.dataset.coords)
       blockFieldsAround(coords)
 
       // Remove Listeners so that here no Element can be dropped anymore
-      currentSection.removeEventListener('dragover', highlightFields)
-      currentSection.removeEventListener('drop', placeElement)
-      coords += 10
-      currentSection = document.querySelector(`[data-coords='${coords}']`)
-    }
+      field.removeEventListener('dragover', highlightFields)
+      field.removeEventListener('drop', placeElement)
+    })
 
     // blockFieldsVerticalElement(ev)
   } else {
@@ -189,6 +198,7 @@ function placeElement(ev) {
       return
     }
 
+    let coords = parseInt(currentSection.dataset.coords)
     // Color appropriate horizontal fields after dropping
     for (let i = sections; i > 0; i--) {
       currentSection.classList.add('placed')
@@ -244,16 +254,15 @@ function checkBlockedHorizontally(targetBox) {
 
 /* Check if element would be placed on blocked
 field. (what is unwanted) */
-function checkBlockedVertically(targetBox) {
-  let coords = parseInt(targetBox.dataset.coords)
-  for (let i = sections; i > 0; i--) {
-    if (targetBox.classList.contains('blocked')) {
-      return true
+function checkBlockedVertically(targetEl) {
+  let blocked = false
+  const fields = getFields(targetEl)
+  fields.forEach((field) => {
+    if (field.classList.contains('blocked')) {
+      blocked = true
     }
-    coords += 10
-    targetBox = document.querySelector(`[data-coords='${coords}']`)
-  }
-  return false
+  })
+  return blocked
 }
 
 function blockFieldsAround(coordsEl) {
