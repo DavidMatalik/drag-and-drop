@@ -1,21 +1,25 @@
 #drag-container,
 #drop-container {
   height: 500px;
-  border: 1px solid black;
 }
 
 #drag-container {
   width: 250px;
+  border: 1px solid black;
 }
 
 #drop-container {
   width: 500px;
+  display: grid;
+  grid-template-columns: repeat(10, 50px);
+  grid-template-rows: repeat(10, 50px);
+  border-top: 1px solid black;
+  border-left: 1px solid black;
 }
 
 .field {
-  width: 50px;
-  height: 50px;
-  display: inline-block;
+  border-right: 1px solid black;
+  border-bottom: 1px solid black;
 }
 
 #element-1 {
