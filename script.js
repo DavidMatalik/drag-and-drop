@@ -106,20 +106,16 @@ function highlightFields(ev) {
 
   let targetEl = ev.target
 
+  if (checkWrap(ev.target) || checkBlocked(ev.target)) {
+    return
+  }
+
   // Check if horizontal or vertical highlighting
   if (vertical) {
-    if (checkWrapVertically(ev.target) || checkBlocked(ev.target)) {
-      return
-    }
-
     // For vertical highlighting
     const fields = getFields(targetEl)
     fields.forEach((field) => field.classList.add('highlight'))
   } else {
-    if (checkWrapHorizontally(ev.target) || checkBlocked(ev.target)) {
-      return
-    }
-
     // For horizontal highlighting
     const fields = getFields(targetEl)
     fields.forEach((field) => field.classList.add('highlight'))
@@ -154,11 +150,11 @@ function placeElement(ev) {
 
   let currentSection = ev.target
 
-  if (vertical) {
-    if (checkWrapVertically(ev.target) || checkBlocked(ev.target)) {
-      return
-    }
+  if (checkWrap(ev.target) || checkBlocked(ev.target)) {
+    return
+  }
 
+  if (vertical) {
     // Color appropriate vertical fields after dropping
     const fields = getFields(currentSection)
     fields.forEach((field) => {
@@ -174,10 +170,6 @@ function placeElement(ev) {
 
     // blockFieldsVerticalElement(ev)
   } else {
-    if (checkWrapHorizontally(ev.target) || checkBlocked(ev.target)) {
-      return
-    }
-
     // Color appropriate horizontal fields after dropping
     const fields = getFields(currentSection)
     fields.forEach((field) => {
@@ -199,25 +191,11 @@ function placeElement(ev) {
 }
 
 // Check if element would wrap (what is unwanted)
-function checkWrapHorizontally(targetBox) {
+function checkWrap(targetBox) {
   const coords = targetBox.dataset.coords
-  const xCoord = parseInt(coords[1])
-  if (parseInt(sections) + xCoord > 10) {
-    return true
-  } else {
-    return false
-  }
-}
+  const coord = vertical ? parseInt(coords[0]) : parseInt(coords[1])
 
-// Check if element would wrap (what is unwanted)
-function checkWrapVertically(targetBox) {
-  const coords = targetBox.dataset.coords
-  const yCoord = parseInt(coords[0])
-  if (parseInt(sections) + yCoord > 10) {
-    return true
-  } else {
-    return false
-  }
+  return parseInt(sections) + coord > 10 ? true : false
 }
 
 /* Check if element would be placed on blocked
