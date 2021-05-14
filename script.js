@@ -1,16 +1,3 @@
-/* Todos: 
-- Write checkBlocked at beginning of function
-
-- You could also write methods for getting vertical or horizontal fields
-  needed for highlighting/whitening/placing methods --> DRY, cleaner code
-
-- Make sections locally?
-
-- Change ev.target to targetEl in highlightFields and placeElement
-
-- Have consistent wording of field and fields across the whole program
-*/
-
 const dragContainer = document.querySelector('#drag-container')
 const dropContainer = document.querySelector('#drop-container')
 const element1 = document.querySelector('#element-1')
@@ -91,19 +78,24 @@ function makeElementDraggable(element) {
 
 function getFields(targetEl) {
   let fields = []
+  const iterator = vertical ? 10 : 1
 
   // for vertical Elements
   let coords = parseInt(targetEl.dataset.coords)
+
   for (let i = sections; i > 0; i--) {
-    const field = document.querySelector(`[data-coords='${coords}']`)
+    const field = document.querySelector(
+      `[data-coords='${coords < 10 ? 0 : ''}${coords}']`
+    )
+
     if (field === null) {
       break
     }
+
     fields.push(field)
     // Prepare selection of field under current field
-    coords += 10
+    coords += iterator
   }
-
   return fields
 }
 
@@ -116,7 +108,7 @@ function highlightFields(ev) {
 
   // Check if horizontal or vertical highlighting
   if (vertical) {
-    if (checkWrapVertically(ev.target) || checkBlockedVertically(ev.target)) {
+    if (checkWrapVertically(ev.target) || checkBlocked(ev.target)) {
       return
     }
 
@@ -124,18 +116,13 @@ function highlightFields(ev) {
     const fields = getFields(targetEl)
     fields.forEach((field) => field.classList.add('highlight'))
   } else {
-    if (
-      checkWrapHorizontally(ev.target) ||
-      checkBlockedHorizontally(ev.target)
-    ) {
+    if (checkWrapHorizontally(ev.target) || checkBlocked(ev.target)) {
       return
     }
 
     // For horizontal highlighting
-    for (let i = sections; i > 0; i--) {
-      targetEl.classList.add('highlight')
-      targetEl = targetEl.nextSibling
-    }
+    const fields = getFields(targetEl)
+    fields.forEach((field) => field.classList.add('highlight'))
   }
 }
 
@@ -151,18 +138,13 @@ function whitenAllFields() {
 function whitenFields(ev) {
   ev.preventDefault()
 
-  let targetEl = ev.target
-
   // Whiten all fields vertically
-  const fields = getFields(targetEl)
-  fields.forEach((field) => field.classList.remove('highlight'))
+  const fieldsVert = getFields(ev.target)
+  fieldsVert.forEach((field) => field.classList.remove('highlight'))
 
-  targetEl = ev.target
   // Whiten all fields horizontally
-  for (let i = sections; i > 0; i--) {
-    targetEl.classList.remove('highlight')
-    targetEl = targetEl.nextSibling
-  }
+  const fieldsHoriz = getFields(ev.target)
+  fieldsHoriz.forEach((field) => field.classList.remove('highlight'))
 }
 
 // Drop element into field and color this field
@@ -173,10 +155,11 @@ function placeElement(ev) {
   let currentSection = ev.target
 
   if (vertical) {
-    if (checkWrapVertically(ev.target) || checkBlockedVertically(ev.target)) {
+    if (checkWrapVertically(ev.target) || checkBlocked(ev.target)) {
       return
     }
 
+    // Color appropriate vertical fields after dropping
     const fields = getFields(currentSection)
     fields.forEach((field) => {
       field.classList.add('placed')
@@ -191,25 +174,22 @@ function placeElement(ev) {
 
     // blockFieldsVerticalElement(ev)
   } else {
-    if (
-      checkWrapHorizontally(ev.target) ||
-      checkBlockedHorizontally(ev.target)
-    ) {
+    if (checkWrapHorizontally(ev.target) || checkBlocked(ev.target)) {
       return
     }
 
-    let coords = parseInt(currentSection.dataset.coords)
     // Color appropriate horizontal fields after dropping
-    for (let i = sections; i > 0; i--) {
-      currentSection.classList.add('placed')
+    const fields = getFields(currentSection)
+    fields.forEach((field) => {
+      field.classList.add('placed')
+
+      const coords = parseInt(field.dataset.coords)
       blockFieldsAround(coords)
 
       // Remove Listeners so that here no Element can be dropped anymore
       currentSection.removeEventListener('dragover', highlightFields)
       currentSection.removeEventListener('drop', placeElement)
-      coords += 1
-      currentSection = document.querySelector(`[data-coords='${coords}']`)
-    }
+    })
   }
 
   // Remove original element and copy
@@ -242,21 +222,10 @@ function checkWrapVertically(targetBox) {
 
 /* Check if element would be placed on blocked
 field. (what is unwanted) */
-function checkBlockedHorizontally(targetBox) {
-  for (let i = sections; i > 0; i--) {
-    if (targetBox.classList.contains('blocked')) {
-      return true
-    }
-    targetBox = targetBox.nextSibling
-  }
-  return false
-}
-
-/* Check if element would be placed on blocked
-field. (what is unwanted) */
-function checkBlockedVertically(targetEl) {
+function checkBlocked(targetEl) {
   let blocked = false
   const fields = getFields(targetEl)
+
   fields.forEach((field) => {
     if (field.classList.contains('blocked')) {
       blocked = true
