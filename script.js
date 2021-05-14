@@ -103,9 +103,6 @@ function getFields(targetEl) {
 // where mouse is and fields on right to mouse
 function highlightFields(ev) {
   ev.preventDefault()
-
-  let targetEl = ev.target
-
   if (checkWrap(ev.target) || checkBlocked(ev.target)) {
     return
   }
@@ -113,11 +110,11 @@ function highlightFields(ev) {
   // Check if horizontal or vertical highlighting
   if (vertical) {
     // For vertical highlighting
-    const fields = getFields(targetEl)
+    const fields = getFields(ev.target)
     fields.forEach((field) => field.classList.add('highlight'))
   } else {
     // For horizontal highlighting
-    const fields = getFields(targetEl)
+    const fields = getFields(ev.target)
     fields.forEach((field) => field.classList.add('highlight'))
   }
 }
@@ -147,16 +144,13 @@ function whitenFields(ev) {
 // and fields on the right to it
 function placeElement(ev) {
   ev.preventDefault()
-
-  let currentSection = ev.target
-
   if (checkWrap(ev.target) || checkBlocked(ev.target)) {
     return
   }
 
   if (vertical) {
     // Color appropriate vertical fields after dropping
-    const fields = getFields(currentSection)
+    const fields = getFields(ev.target)
     fields.forEach((field) => {
       field.classList.add('placed')
 
@@ -167,11 +161,9 @@ function placeElement(ev) {
       field.removeEventListener('dragover', highlightFields)
       field.removeEventListener('drop', placeElement)
     })
-
-    // blockFieldsVerticalElement(ev)
   } else {
     // Color appropriate horizontal fields after dropping
-    const fields = getFields(currentSection)
+    const fields = getFields(ev.target)
     fields.forEach((field) => {
       field.classList.add('placed')
 
@@ -179,8 +171,8 @@ function placeElement(ev) {
       blockFieldsAround(coords)
 
       // Remove Listeners so that here no Element can be dropped anymore
-      currentSection.removeEventListener('dragover', highlightFields)
-      currentSection.removeEventListener('drop', placeElement)
+      field.removeEventListener('dragover', highlightFields)
+      field.removeEventListener('drop', placeElement)
     })
   }
 
@@ -191,8 +183,8 @@ function placeElement(ev) {
 }
 
 // Check if element would wrap (what is unwanted)
-function checkWrap(targetBox) {
-  const coords = targetBox.dataset.coords
+function checkWrap(targetEl) {
+  const coords = targetEl.dataset.coords
   const coord = vertical ? parseInt(coords[0]) : parseInt(coords[1])
 
   return parseInt(sections) + coord > 10 ? true : false
