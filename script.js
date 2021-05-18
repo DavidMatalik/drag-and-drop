@@ -40,6 +40,7 @@ function makeElementDraggable(element) {
 
     draggedElementCopy = element.cloneNode(true)
     draggedElementCopy.style.position = 'absolute'
+    draggedElementCopy.style.transformOrigin = 'top left'
 
     document.body.append(draggedElementCopy)
 
