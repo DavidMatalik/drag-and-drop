@@ -8,9 +8,9 @@ element1.dataset.sections = '5'
 element2.dataset.sections = '4'
 element3.dataset.sections = '3'
 
-let sections = null
-let copy = null
-let vertical = false
+let draggedElementSections = null
+let draggedElementCopy = null
+let elementVerticalPosition = false
 
 //Create fields of dropContainer
 for (let i = 0; i < 10; i++) {
@@ -36,39 +36,39 @@ function makeElementDraggable(element) {
     ev.dataTransfer.setDragImage(img, 0, 0)
     ev.dataTransfer.setData('text', ev.target.id)
     ev.dataTransfer.effectAllowed = 'all'
-    sections = parseInt(ev.target.dataset.sections)
+    draggedElementSections = parseInt(ev.target.dataset.sections)
 
-    copy = element.cloneNode(true)
-    copy.style.position = 'absolute'
+    draggedElementCopy = element.cloneNode(true)
+    draggedElementCopy.style.position = 'absolute'
 
-    document.body.append(copy)
+    document.body.append(draggedElementCopy)
 
     document.addEventListener('drag', (ev) => {
-      copy.style.top = ev.pageY + 10 + 'px'
-      copy.style.left = ev.pageX + 'px'
+      draggedElementCopy.style.top = ev.pageY + 10 + 'px'
+      draggedElementCopy.style.left = ev.pageX + 'px'
     })
 
     document.addEventListener('dragend', () => {
-      copy.remove()
+      draggedElementCopy.remove()
     })
   }
 
   // If ctrl key is pressed and hold
-  // then display copy vertical
+  // then display draggedElementCopy elementVerticalPosition
   element.ondrag = (ev) => {
     if (ev.ctrlKey) {
-      copy.style.transform = 'rotate(90deg)'
-      if (vertical === false) {
-        vertical = true
-        // Without whitenAllFields for some time vertical
+      draggedElementCopy.style.transform = 'rotate(90deg)'
+      if (elementVerticalPosition === false) {
+        elementVerticalPosition = true
+        // Without whitenAllFields for some time elementVerticalPosition
         // highlights are displayed and horizontal
         whitenAllFields()
       }
     } else {
-      copy.style.transform = ''
-      if (vertical === true) {
-        vertical = false
-        // Without whitenAllFields for some time vertical
+      draggedElementCopy.style.transform = ''
+      if (elementVerticalPosition === true) {
+        elementVerticalPosition = false
+        // Without whitenAllFields for some time elementVerticalPosition
         // highlights are displayed and horizontal
         whitenAllFields()
       }
@@ -77,14 +77,14 @@ function makeElementDraggable(element) {
 }
 
 // Returns all fields depending on number of global var sections
-// and if global var vertical is true or false
+// and if global var elementVerticalPosition is true or false
 function getFields(targetEl) {
   let fields = []
   let coords = parseInt(targetEl.dataset.coords)
 
-  const iterator = vertical ? 10 : 1
+  const iterator = elementVerticalPosition ? 10 : 1
 
-  for (let i = sections; i > 0; i--) {
+  for (let i = draggedElementSections; i > 0; i--) {
     const field = document.querySelector(
       `[data-coords='${coords < 10 ? 0 : ''}${coords}']`
     )
@@ -113,7 +113,7 @@ function highlightFields(ev) {
   fields.forEach((field) => field.classList.add('highlight'))
 }
 
-// For change from vertical to horizontal or otherway
+// For change from elementVerticalPosition to horizontal or otherway
 function whitenAllFields() {
   fields = document.querySelectorAll('.field')
   fields.forEach((field) => {
@@ -149,18 +149,18 @@ function placeElement(ev) {
     field.removeEventListener('drop', placeElement)
   })
 
-  // Remove original element and copy
+  // Remove original element and draggedElementCopy
   const data = ev.dataTransfer.getData('text')
   document.getElementById(data).remove()
-  copy.remove()
+  draggedElementCopy.remove()
 }
 
 // Check if element would wrap (what is unwanted)
 function checkWrap(targetEl) {
   const coords = targetEl.dataset.coords
-  const coord = vertical ? parseInt(coords[0]) : parseInt(coords[1])
+  const coord = elementVerticalPosition ? parseInt(coords[0]) : parseInt(coords[1])
 
-  return parseInt(sections) + coord > 10 ? true : false
+  return parseInt(draggedElementSections) + coord > 10 ? true : false
 }
 
 /* Check if element would be placed on blocked
