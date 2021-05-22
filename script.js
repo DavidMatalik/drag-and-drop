@@ -159,7 +159,9 @@ function placeElement(ev) {
 // Check if element would wrap (what is unwanted)
 function checkWrap(targetEl) {
   const coords = targetEl.dataset.coords
-  const coord = elementVerticalPosition ? parseInt(coords[0]) : parseInt(coords[1])
+  const coord = elementVerticalPosition
+    ? parseInt(coords[0])
+    : parseInt(coords[1])
 
   return parseInt(draggedElementSections) + coord > 10 ? true : false
 }
@@ -182,19 +184,32 @@ function checkBlocked(targetEl) {
 function blockFieldsAround(coordsEl) {
   let blockedCoords = []
 
+  /* For avoiding blocks on the opposite side
+  the modulo tests are implemented */
+
   // Block fields on bottom side
-  blockedCoords.push(`${coordsEl + 9}`)
+  if (coordsEl % 10 !== 0) {
+    blockedCoords.push(`${coordsEl + 9}`)
+  }
   blockedCoords.push(`${coordsEl + 10}`)
-  blockedCoords.push(`${coordsEl + 11}`)
+  if (coordsEl % 10 !== 9) {
+    blockedCoords.push(`${coordsEl + 11}`)
+  }
 
   // Block fields on top side
-  blockedCoords.push(`${coordsEl - 9}`)
+  if (coordsEl % 10 !== 9) {
+    blockedCoords.push(`${coordsEl - 9}`)
+  }
   blockedCoords.push(`${coordsEl - 10}`)
-  blockedCoords.push(`${coordsEl - 11}`)
+  if (coordsEl % 10 !== 0) {
+    blockedCoords.push(`${coordsEl - 11}`)
+  }
 
   // Block fields on left and right side
-  blockedCoords.push(`${coordsEl - 1}`)
-  blockedCoords.push(`${coordsEl + 1}`)
+  if ((coordsEl % 10 !== 0) & (coordsEl % 10 !== 9)) {
+    blockedCoords.push(`${coordsEl - 1}`)
+    blockedCoords.push(`${coordsEl + 1}`)
+  }
 
   blockedCoords.forEach((coords) => {
     const el = document.querySelector(
