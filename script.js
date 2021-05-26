@@ -25,6 +25,19 @@ for (let i = 0; i < 10; i++) {
   }
 }
 
+element1.addEventListener('touchstart', (e) => {
+  draggedElementCopy = element1.cloneNode(true)
+  draggedElementCopy.style.position = 'absolute'
+
+  document.body.append(draggedElementCopy)
+
+  document.addEventListener('touchmove', (ev) => {
+    let touchLocation = ev.targetTouches[0]
+    draggedElementCopy.style.top = touchLocation.pageY + 10 + 'px'
+    draggedElementCopy.style.left = touchLocation.pageX + 'px'
+  })
+})
+
 makeElementDraggable(element1)
 makeElementDraggable(element2)
 makeElementDraggable(element3)
